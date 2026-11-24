@@ -1,91 +1,85 @@
-// SURFER FRONTEND DEMONSTRATION
-// Real authentication, wallet balances, payments and admin
-// permissions must be connected to a secure backend.
+// ======================================
+// SURFER - SUPABASE CONNECTED FRONTEND
+// ======================================
+
+const SUPABASE_URL = "https://wdrngxgensrqpuitoepi.supabase.co";
+
+const SUPABASE_KEY = "sb_publishable_mpnKfMVLxpuw_55Aj0DMrQ_OlGSZc35";
+
+const { createClient } = window.supabase;
+
+const db = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const $ = id => document.getElementById(id);
 
-let mode = "login";
-let selectedPlan = "";
-
-const plans = {
-  Basic: 3000,
-  Starter: 5000,
-  Premium: 9000,
-  VIP: 13000
-};
-
 let user = null;
-let tasks = [
-  {
-    id: 1,
-    title: "Social media engagement",
-    description: "Complete the supplied social media assignment.",
-    reward: 500,
-    tier: "Basic"
-  },
-  {
-    id: 2,
-    title: "Online research",
-    description: "Complete a short research assignment.",
-    reward: 1000,
-    tier: "Starter"
-  },
-  {
-    id: 3,
-    title: "Product feedback",
-    description: "Submit genuine feedback on a supplied product.",
-    reward: 750,
-    tier: "Premium"
-  }
-];
-
+let profile = null;
+let wallet = null;
+let selectedPlan = null;
+let tasks = [];
 let submissions = [];
 let withdrawals = [];
-let history = [];
-
-// Demo accounts only. Never use localStorage for real money.
+let transactions = [];
 
 function toast(message) {
-  const box = $("toast");
-  box.textContent = message;
-  box.classList.add("show");
-
-  setTimeout(() => box.classList.remove("show"), 3000);
+    const box = $("toast");
+    box.textContent = message;
+    box.classList.add("show");
+    setTimeout(() => box.classList.remove("show"), 3500);
 }
 
 function money(value) {
-  return "₦" + Number(value || 0).toLocaleString("en-NG", {
-    minimumFractionDigits: 2
-  });
+    return "₦" + Number(value || 0).toLocaleString("en-NG", {
+        minimumFractionDigits: 2
+    });
 }
 
+function escapeHTML(value) {
+    return String(value ?? "").replace(/[&<>"']/g, char => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#039;"
+    })[char]);
+}
+
+// ======================================
+// AUTHENTICATION
+// ======================================
+
+let mode = "login";
+
 function openAuth(tab = "login") {
-  mode = tab;
-  $("authModal").classList.remove("hidden");
-  updateAuth();
+    mode = tab;
+    $("authModal").classList.remove("hidden");
+    updateAuth();
 }
 
 function closeAuth() {
-  $("authModal").classList.add("hidden");
+    $("authModal").classList.add("hidden");
 }
 
 function updateAuth() {
-  const registering = mode === "register";
+    const registering = mode === "register";
 
-  $("authHeading").textContent = registering
-    ? "Create your account"
-    : "Welcome back";
+    $("authHeading").textContent = registering
+        ? "Create your account"
+        : "Welcome back";
 
-  $("name").classList.toggle("hidden", !registering);
-  $("name").required = registering;
+    $("name").classList.toggle("hidden", !registering);
+    $("name").required = registering;
 
-  $("authSubmit").textContent = registering
-    ? "Create account"
-    : "Log in";
+    $("authSubmit").textContent = registering
+        ? "Create account"
+        : "Log in";
 
-  document.querySelectorAll(".tabs button").forEach(button => {
-    button.classList.toggle("active", button.dataset.tab === mode);
-  });
+    document.querySelectorAll(".tabs button").forEach(button => {
+        button.classList.toggle(
+            "active",
+            button.dataset.tab === mode
+        );
+    });
 }
 
 $("getStarted").onclick = () => openAuth("register");
@@ -93,318 +87,575 @@ $("navLogin").onclick = () => openAuth("login");
 $("closeAuth").onclick = closeAuth;
 
 document.querySelectorAll(".tabs button").forEach(button => {
-  button.onclick = () => {
-    mode = button.dataset.tab;
-    updateAuth();
-  };
+    button.onclick = () => {
+        mode = button.dataset.tab;
+        updateAuth();
+    };
 });
 
-$("authForm").onsubmit = event => {
-  event.preventDefault();
+$("authForm").onsubmit = async event => {
+    event.preventDefault();
 
-  const email = $("email").value.trim().toLowerCase();
-  const password = $("password").value;
+    const email = $("email").value.trim().toLowerCase();
+    const password = $("password").value;
 
-  if (mode === "register") {
-    const name = $("name").value.trim();
+    $("authSubmit").disabled = true;
 
-    if (!name) return toast("Enter your full name.");
+    try {
+        if (mode === "register") {
 
-    user = {
-      name,
-      email,
-      plan: selectedPlan || "None",
-      balance: 0,
-      earnings: 0,
-      referral: "SURFER-" + Math.random().toString(36).slice(2, 7).toUpperCase()
-    };
+            const fullName = $("name").value.trim();
 
-    toast("Demo account created.");
-  } else {
-    if (!user || user.email !== email) {
-      return toast("No matching demo account. Register first.");
+            if (!fullName) {
+                throw new Error("Enter your full name.");
+            }
+
+            const { data, error } = await db.auth.signUp({
+                email,
+                password,
+                options: {
+                    data: {
+                        full_name: fullName
+                    }
+                }
+            });
+
+            if (error) throw error;
+
+            if (!data.session) {
+                toast("Registration successful. Check your email to confirm your account.");
+                closeAuth();
+                return;
+            }
+
+            user = data.user;
+
+        } else {
+
+            const { data, error } = await db.auth.signInWithPassword({
+                email,
+                password
+            });
+
+            if (error) throw error;
+
+            user = data.user;
+        }
+
+        closeAuth();
+        await showDashboard();
+
+    } catch (error) {
+        toast(error.message);
+    } finally {
+        $("authSubmit").disabled = false;
+    }
+};
+
+// ======================================
+// SESSION RESTORATION
+// ======================================
+
+db.auth.onAuthStateChange((event, session) => {
+    if (event === "SIGNED_IN" && session) {
+        user = session.user;
+
+        setTimeout(() => {
+            showDashboard();
+        }, 0);
     }
 
-    toast("Demo login successful.");
-  }
+    if (event === "SIGNED_OUT") {
+        user = null;
+        profile = null;
 
-  closeAuth();
-  showDashboard();
-};
+        $("dashboard").classList.add("hidden");
+        $("admin").classList.add("hidden");
+        $("landing").classList.remove("hidden");
+    }
+});
 
-function showDashboard() {
-  $("landing").classList.add("hidden");
-  $("dashboard").classList.remove("hidden");
-  $("admin").classList.add("hidden");
+async function initialize() {
+    const { data, error } = await db.auth.getSession();
 
-  $("memberName").textContent = user.name;
-  $("memberPlan").textContent = user.plan;
-  $("refCode").textContent = user.referral;
+    if (error) {
+        console.error(error);
+        return;
+    }
 
-  updateWallet();
-  renderTasks();
-  renderSubmissions();
-  renderWithdrawals();
+    if (data.session) {
+        user = data.session.user;
+        await showDashboard();
+    }
 }
 
-function updateWallet() {
-  $("balance").textContent = money(user.balance);
-  $("earnings").textContent = money(user.earnings);
-  $("walletAmount").textContent = money(user.balance);
+initialize();
+
+// ======================================
+// MEMBER DASHBOARD
+// ======================================
+
+async function showDashboard() {
+
+    if (!user) return;
+
+    $("landing").classList.add("hidden");
+    $("admin").classList.add("hidden");
+    $("dashboard").classList.remove("hidden");
+
+    try {
+        await Promise.all([
+            loadProfile(),
+            loadWallet(),
+            loadTasks(),
+            loadSubmissions(),
+            loadWithdrawals(),
+            loadTransactions(),
+            loadMembership(),
+            loadReferrals()
+        ]);
+
+    } catch (error) {
+        console.error(error);
+        toast("Some dashboard information could not load.");
+    }
 }
 
-$("logout").onclick = () => {
-  user = null;
-  $("dashboard").classList.add("hidden");
-  $("landing").classList.remove("hidden");
-  toast("Logged out.");
-};
+// ======================================
+// PROFILE
+// ======================================
 
+async function loadProfile() {
+
+    const { data, error } = await db
+        .from("profiles")
+        .select("*")
+        .eq("id", user.id)
+        .maybeSingle();
+
+    if (error) throw error;
+
+    profile = data;
+
+    $("memberName").textContent =
+        profile?.full_name || user.email;
+
+    $("refCode").textContent =
+        profile?.referral_code || "Not available";
+}
+
+// ======================================
+// WALLET
+// ======================================
+
+async function loadWallet() {
+
+    const { data, error } = await db
+        .from("wallets")
+        .select("*")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+    if (error) throw error;
+
+    wallet = data;
+
+    const balance = Number(wallet?.balance || 0);
+
+    $("balance").textContent = money(balance);
+    $("walletAmount").textContent = money(balance);
+}
+
+// ======================================
 // MEMBERSHIP
+// ======================================
 
-document.addEventListener("click", event => {
-  const button = event.target.closest(".choose");
-  if (!button) return;
+async function loadMembership() {
 
-  selectedPlan = button.dataset.plan;
+    const { data, error } = await db
+        .from("memberships")
+        .select("*")
+        .eq("user_id", user.id)
+        .eq("status", "active")
+        .order("created_at", { ascending: false })
+        .limit(1);
 
-  if (!user) {
-    openAuth("register");
-    toast(selectedPlan + " selected. Complete registration first.");
-    return;
-  }
+    if (error) throw error;
 
-  toast(
-    selectedPlan + " costs " +
-    money(plans[selectedPlan]) +
-    ". Payment verification is not connected yet."
-  );
-});
+    if (!data.length) {
+        $("memberPlan").textContent = "None";
+        return;
+    }
 
-// MEMBER NAVIGATION
+    const membership = data[0];
 
-document.querySelectorAll(".dashboard-nav button").forEach(button => {
-  button.onclick = () => {
-    document.querySelectorAll(".dashboard-nav button")
-      .forEach(item => item.classList.remove("active"));
+    const { data: plan, error: planError } = await db
+        .from("membership_plans")
+        .select("name")
+        .eq("id", membership.plan_id)
+        .maybeSingle();
 
-    button.classList.add("active");
+    if (planError) throw planError;
 
-    document.querySelectorAll(".dashboard-panel[id]").forEach(panel => {
-      panel.classList.add("hidden");
-    });
+    $("memberPlan").textContent = plan?.name || "Active";
+}
 
-    $(button.dataset.page).classList.remove("hidden");
-  };
-});
-
+// ======================================
 // TASKS
+// ======================================
+
+async function loadTasks() {
+
+    const { data, error } = await db
+        .from("tasks")
+        .select("*")
+        .eq("active", true)
+        .order("created_at", { ascending: false });
+
+    if (error) throw error;
+
+    tasks = data || [];
+
+    renderTasks();
+}
 
 function renderTasks() {
-  const list = $("taskList");
-  list.innerHTML = "";
 
-  const levels = ["None", "Basic", "Starter", "Premium", "VIP"];
-  const userLevel = levels.indexOf(user.plan);
+    const list = $("taskList");
+    list.innerHTML = "";
 
-  tasks.forEach(task => {
-    const eligible = levels.indexOf(task.tier) <= userLevel;
+    if (!tasks.length) {
+        list.textContent = "No active tasks available.";
+        return;
+    }
 
-    const row = document.createElement("div");
-    row.className = "task-row";
+    tasks.forEach(task => {
 
-    const details = document.createElement("div");
-    const title = document.createElement("strong");
-    const description = document.createElement("p");
+        const row = document.createElement("div");
+        row.className = "task-row";
 
-    title.textContent = task.title;
-    description.textContent =
-      task.description + " | " + task.tier + " access";
+        const details = document.createElement("div");
 
-    details.append(title, description);
+        const title = document.createElement("strong");
+        title.textContent = task.title;
 
-    const action = document.createElement("button");
-    action.className = "primary-btn";
-    action.textContent = eligible ? "Submit task" : "Upgrade required";
-    action.disabled = !eligible;
+        const description = document.createElement("p");
+        description.textContent =
+            `${task.description || ""} | Reward: ${money(task.reward)}`;
 
-    action.onclick = () => submitTask(task);
+        details.append(title, description);
 
-    row.append(details, action);
-    list.appendChild(row);
-  });
+        const button = document.createElement("button");
+        button.className = "primary-btn";
+        button.textContent = "Submit task";
+
+        button.onclick = () => submitTask(task);
+
+        row.append(details, button);
+
+        list.appendChild(row);
+    });
 }
 
-function submitTask(task) {
-  const proof = prompt("Enter your task completion evidence:");
+// ======================================
+// TASK SUBMISSIONS
+// ======================================
 
-  if (!proof || !proof.trim()) return;
+async function submitTask(task) {
 
-  submissions.push({
-    id: Date.now(),
-    email: user.email,
-    task: task.title,
-    reward: task.reward,
-    proof: proof.trim(),
-    status: "Pending review"
-  });
+    const proof = prompt(
+        "Enter your task completion evidence:"
+    );
 
-  history.push("Submitted: " + task.title);
+    if (!proof || !proof.trim()) return;
 
-  renderSubmissions();
-  renderAdmin();
+    try {
 
-  toast("Submission received for review.");
+        const { error } = await db
+            .from("task_submissions")
+            .insert({
+                user_id: user.id,
+                task_id: task.id,
+                proof: proof.trim(),
+                status: "pending"
+            });
+
+        if (error) throw error;
+
+        toast("Task submitted successfully.");
+
+        await loadSubmissions();
+
+    } catch (error) {
+        toast(error.message);
+    }
+}
+
+async function loadSubmissions() {
+
+    const { data, error } = await db
+        .from("task_submissions")
+        .select("*, tasks(title, reward)")
+        .eq("user_id", user.id)
+        .order("submitted_at", { ascending: false });
+
+    if (error) throw error;
+
+    submissions = data || [];
+
+    renderSubmissions();
 }
 
 function renderSubmissions() {
-  const own = submissions.filter(item => item.email === user.email);
 
-  $("activityList").textContent = own.length
-    ? own.map(item => item.task + " — " + item.status).join(" | ")
-    : "No submissions yet.";
+    const list = $("activityList");
+
+    if (!submissions.length) {
+        list.textContent = "No submissions yet.";
+        return;
+    }
+
+    list.innerHTML = "";
+
+    submissions.forEach(item => {
+
+        const row = document.createElement("div");
+        row.className = "history-row";
+
+        row.textContent =
+            `${item.tasks?.title || "Task"} — ${item.status}`;
+
+        list.appendChild(row);
+    });
 }
 
+// ======================================
 // REFERRALS
+// ======================================
+
+async function loadReferrals() {
+
+    const { data, error } = await db
+        .from("referrals")
+        .select("*")
+        .eq("referrer_id", user.id);
+
+    if (error) throw error;
+
+    $("referralList").textContent =
+        `${(data || []).length} recorded referrals`;
+}
 
 $("copyReferral").onclick = async () => {
-  try {
-    await navigator.clipboard.writeText(user.referral);
-    toast("Referral code copied.");
-  } catch {
-    toast("Your referral code is " + user.referral);
-  }
+
+    const code = profile?.referral_code;
+
+    if (!code) {
+        return toast("Referral code unavailable.");
+    }
+
+    try {
+        await navigator.clipboard.writeText(code);
+        toast("Referral code copied.");
+    } catch {
+        toast("Your referral code: " + code);
+    }
 };
 
+// ======================================
 // WITHDRAWALS
+// ======================================
 
-$("withdrawForm").onsubmit = event => {
-  event.preventDefault();
+$("withdrawForm").onsubmit = async event => {
 
-  const amount = Number($("withdrawAmount").value);
+    event.preventDefault();
 
-  if (amount <= 0 || amount > user.balance) {
-    return toast("Insufficient verified balance.");
-  }
+    const amount = Number($("withdrawAmount").value);
 
-  withdrawals.push({
-    id: Date.now(),
-    email: user.email,
-    amount,
-    bank: $("bankName").value,
-    account: $("accountNumber").value,
-    accountName: $("accountName").value,
-    status: "Pending verification"
-  });
-
-  // No balance is deducted until the backend verifies the request.
-
-  renderWithdrawals();
-  renderAdmin();
-
-  $("withdrawForm").reset();
-  toast("Withdrawal request submitted for review.");
-};
-
-function renderWithdrawals() {
-  const own = withdrawals.filter(item => item.email === user.email);
-
-  $("withdrawHistory").innerHTML = own.length
-    ? own.map(item =>
-        `<div class="history-row">${money(item.amount)} — ${item.status}</div>`
-      ).join("")
-    : "<p class='muted'>No withdrawal requests yet.</p>";
-}
-
-// ADMIN DEMONSTRATION
-
-$("taskForm").onsubmit = event => {
-  event.preventDefault();
-
-  const task = {
-    id: Date.now(),
-    title: $("taskTitle").value.trim(),
-    description: $("taskDescription").value.trim(),
-    reward: Number($("taskReward").value),
-    tier: $("taskTier").value
-  };
-
-  tasks.push(task);
-
-  $("taskForm").reset();
-  renderTasks();
-  renderAdmin();
-
-  toast("Demo task added.");
-};
-
-function renderAdmin() {
-  $("adminSubmissions").innerHTML = "";
-  $("adminWithdrawals").innerHTML = "";
-
-  if (!submissions.length) {
-    $("adminSubmissions").textContent = "No submissions yet.";
-  }
-
-  submissions.forEach(item => {
-    const row = document.createElement("div");
-    row.className = "history-row";
-
-    const details = document.createElement("span");
-    details.textContent = `${item.task} — ${item.email} — ${money(item.reward)} — ${item.status}`;
-
-    row.appendChild(details);
-
-    if (item.status === "Pending review") {
-      const approve = document.createElement("button");
-      approve.className = "primary-btn";
-      approve.textContent = "Approve demo";
-
-      approve.onclick = () => {
-        item.status = "Approved (demo only)";
-        renderAdmin();
-        renderSubmissions();
-        toast("Demo approval recorded. No money credited.");
-      };
-
-      row.appendChild(approve);
+    if (!Number.isFinite(amount) || amount <= 0) {
+        return toast("Enter a valid withdrawal amount.");
     }
 
-    $("adminSubmissions").appendChild(row);
-  });
+    if (amount > Number(wallet?.balance || 0)) {
+        return toast("Insufficient wallet balance.");
+    }
 
-  if (!withdrawals.length) {
-    $("adminWithdrawals").textContent = "No requests yet.";
-  }
+    try {
 
-  withdrawals.forEach(item => {
-    const row = document.createElement("div");
-    row.className = "history-row";
-    row.textContent =
-      `${item.email} — ${money(item.amount)} — ${item.status}`;
+        const { error } = await db
+            .from("withdrawal_requests")
+            .insert({
+                user_id: user.id,
+                amount,
+                bank_name: $("bankName").value.trim(),
+                account_number: $("accountNumber").value.trim(),
+                account_name: $("accountName").value.trim(),
+                status: "pending"
+            });
 
-    $("adminWithdrawals").appendChild(row);
-  });
-}
+        if (error) throw error;
 
-// ADMIN PREVIEW
-// This is not secure authentication and must not be used
-// as a real administrator login.
+        $("withdrawForm").reset();
 
-function showAdminPreview() {
-  $("landing").classList.add("hidden");
-  $("dashboard").classList.add("hidden");
-  $("admin").classList.remove("hidden");
-  renderAdmin();
-}
+        toast("Withdrawal request submitted for review.");
 
-$("adminLogout").onclick = () => {
-  $("admin").classList.add("hidden");
-  $("landing").classList.remove("hidden");
+        await loadWithdrawals();
+
+    } catch (error) {
+        toast(error.message);
+    }
 };
 
-// Optional development shortcut:
-// Remove before deployment.
-if (location.search === "?admin-preview") {
-  showAdminPreview();
+async function loadWithdrawals() {
+
+    const { data, error } = await db
+        .from("withdrawal_requests")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false });
+
+    if (error) throw error;
+
+    withdrawals = data || [];
+
+    $("withdrawHistory").innerHTML = "";
+
+    if (!withdrawals.length) {
+        $("withdrawHistory").textContent =
+            "No withdrawal requests yet.";
+        return;
     }
+
+    withdrawals.forEach(item => {
+
+        const row = document.createElement("div");
+        row.className = "history-row";
+
+        row.textContent =
+            `${money(item.amount)} — ${item.status}`;
+
+        $("withdrawHistory").appendChild(row);
+    });
+}
+
+// ======================================
+// TRANSACTION HISTORY
+// ======================================
+
+async function loadTransactions() {
+
+    const { data, error } = await db
+        .from("transactions")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false });
+
+    if (error) throw error;
+
+    transactions = data || [];
+
+    const earnings = transactions
+        .filter(item =>
+            item.status === "completed" &&
+            Number(item.amount) > 0
+        )
+        .reduce((sum, item) => sum + Number(item.amount), 0);
+
+    $("earnings").textContent = money(earnings);
+}
+
+// ======================================
+// MEMBERSHIP PLAN SELECTION
+// ======================================
+
+document.addEventListener("click", async event => {
+
+    const button = event.target.closest(".choose");
+
+    if (!button) return;
+
+    selectedPlan = button.dataset.plan;
+
+    try {
+
+        const { data, error } = await db
+            .from("membership_plans")
+            .select("*")
+            .eq("name", selectedPlan)
+            .eq("active", true)
+            .maybeSingle();
+
+        if (error) throw error;
+
+        if (!data) {
+            return toast("This membership plan is not available.");
+        }
+
+        toast(
+            `${data.name} costs ${money(data.price)}. Payment verification is not yet connected.`
+        );
+
+    } catch (error) {
+        toast(error.message);
+    }
+});
+
+// ======================================
+// MEMBER NAVIGATION
+// ======================================
+
+document.querySelectorAll(".dashboard-nav button")
+.forEach(button => {
+
+    button.onclick = () => {
+
+        document.querySelectorAll(".dashboard-nav button")
+            .forEach(item => item.classList.remove("active"));
+
+        button.classList.add("active");
+
+        document.querySelectorAll(".dashboard-panel[id]")
+            .forEach(panel => panel.classList.add("hidden"));
+
+        $(button.dataset.page).classList.remove("hidden");
+    };
+});
+
+// ======================================
+// LOGOUT
+// ======================================
+
+$("logout").onclick = async () => {
+
+    const { error } = await db.auth.signOut();
+
+    if (error) {
+        toast(error.message);
+        return;
+    }
+
+    toast("Logged out successfully.");
+};
+
+// ======================================
+// ADMIN SECURITY
+// ======================================
+
+// Admin operations are intentionally disabled.
+// They must be implemented through a separately
+// authorized server-side admin system.
+
+$("admin").classList.add("hidden");
+
+if ($("taskForm")) {
+    $("taskForm").onsubmit = event => {
+        event.preventDefault();
+        toast("Admin task creation is not enabled.");
+    };
+}
+
+if ($("adminLogout")) {
+    $("adminLogout").onclick = async () => {
+        await db.auth.signOut();
+    };
+               }
