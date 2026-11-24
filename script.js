@@ -7,7 +7,6 @@ const SUPABASE_URL = "https://wdrngxgensrqpuitoepi.supabase.co";
 const SUPABASE_KEY = "sb_publishable_mpnKfMVLxpuw_55Aj0DMrQ_OlGSZc35";
 
 const { createClient } = window.supabase;
-
 const db = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const $ = id => document.getElementById(id);
@@ -168,6 +167,7 @@ db.auth.onAuthStateChange((event, session) => {
     if (event === "SIGNED_OUT") {
         user = null;
         profile = null;
+        wallet = null;
 
         $("dashboard").classList.add("hidden");
         $("admin").classList.add("hidden");
@@ -222,7 +222,7 @@ async function showDashboard() {
 }
 
 // ======================================
-// PROFILE
+// PROFILE - UPDATED MEMBER NAME
 // ======================================
 
 async function loadProfile() {
@@ -233,15 +233,23 @@ async function loadProfile() {
         .eq("id", user.id)
         .maybeSingle();
 
-    if (error) throw error;
+    if (error) {
+        console.error("Profile loading error:", error);
+    }
 
-    profile = data;
+    profile = data || {};
 
-    $("memberName").textContent =
-        profile?.full_name || user.email;
+    const fullName =
+        profile.full_name ||
+        user.user_metadata?.full_name ||
+        user.user_metadata?.name ||
+        user.email?.split("@")[0] ||
+        "Member";
+
+    $("memberName").textContent = fullName;
 
     $("refCode").textContent =
-        profile?.referral_code || "Not available";
+        profile.referral_code || "Not available";
 }
 
 // ======================================
@@ -363,9 +371,7 @@ function renderTasks() {
 
 async function submitTask(task) {
 
-    const proof = prompt(
-        "Enter your task completion evidence:"
-    );
+    const proof = prompt("Enter your task completion evidence:");
 
     if (!proof || !proof.trim()) return;
 
@@ -641,10 +647,6 @@ $("logout").onclick = async () => {
 // ADMIN SECURITY
 // ======================================
 
-// Admin operations are intentionally disabled.
-// They must be implemented through a separately
-// authorized server-side admin system.
-
 $("admin").classList.add("hidden");
 
 if ($("taskForm")) {
@@ -658,4 +660,4 @@ if ($("adminLogout")) {
     $("adminLogout").onclick = async () => {
         await db.auth.signOut();
     };
-               }
+            }
