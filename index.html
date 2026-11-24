@@ -1,331 +1,254 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#080d29">
-  <title>NovaRewards | Earn More</title>
-  <link rel="stylesheet" href="style.css">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#080d29">
+<title>Surfer | Earn Opportunities</title>
+<link rel="stylesheet" href="style.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
-
 <body>
-  <div class="ambient ambient-one"></div>
-  <div class="ambient ambient-two"></div>
-  <div class="ambient ambient-three"></div>
 
-  <header class="topbar">
-    <a class="brand" href="#">
-      <span class="brand-icon">N</span>
-      <span>Nova<span class="brand-light">Rewards</span></span>
-    </a>
+<div class="glow glow1"></div>
+<div class="glow glow2"></div>
 
-    <nav class="desktop-nav">
-      <a href="#home">Home</a>
-      <a href="#tasks">Tasks</a>
-      <a href="#packages">Membership</a>
-      <a href="#how">How it works</a>
-    </nav>
+<header class="navbar">
+  <a class="logo" href="#">SURFER<span>✦</span></a>
+  <button class="glass-btn" id="navLogin">Log in</button>
+</header>
 
-    <div class="header-actions">
-      <button class="button button-glass" id="loginOpen">Log in</button>
-      <button class="button button-primary" id="registerOpen">Get started</button>
+<main id="landing">
+  <section class="hero">
+    <div class="eyebrow">✦ YOUR OPPORTUNITY STARTS HERE</div>
+    <h1>Discover tasks.<br><span>Unlock opportunities.</span></h1>
+    <p>Join a growing community, discover online assignments and earn rewards for successfully completed and verified tasks.</p>
+    <div class="actions">
+      <button class="primary-btn" id="getStarted">Get started ↗</button>
+      <button class="glass-btn" onclick="document.querySelector('#how').scrollIntoView()">Explore</button>
     </div>
+  </section>
+
+  <section class="preview glass">
+    <div class="preview-head">
+      <span>MEMBER EXPERIENCE</span>
+      <span class="live">● LIVE PREVIEW</span>
+    </div>
+    <h2>Welcome to Surfer</h2>
+    <div class="preview-balance">₦0.00</div>
+    <small>Illustrative wallet balance</small>
+    <div class="preview-stats">
+      <div><strong>Tasks</strong><small>Opportunities</small></div>
+      <div><strong>Rewards</strong><small>Verified earnings</small></div>
+    </div>
+  </section>
+
+  <section class="section" id="how">
+    <div class="section-title">
+      <span>GET STARTED</span>
+      <h2>How Surfer works</h2>
+      <p>A simple process to discover opportunities.</p>
+    </div>
+
+    <div class="grid three">
+      <article class="glass feature">
+        <div class="icon">◉</div>
+        <h3>Create an account</h3>
+        <p>Register and create your member profile.</p>
+      </article>
+      <article class="glass feature">
+        <div class="icon">◇</div>
+        <h3>Complete tasks</h3>
+        <p>Choose available assignments and submit your work.</p>
+      </article>
+      <article class="glass feature">
+        <div class="icon">✦</div>
+        <h3>Receive rewards</h3>
+        <p>Get credited for approved, funded assignments.</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">
+      <span>MEMBERSHIP</span>
+      <h2>Choose your plan</h2>
+      <p>Membership tiers determine eligible task access, not guaranteed earnings.</p>
+    </div>
+
+    <div class="grid plans">
+      <article class="glass plan">
+        <h3>Basic</h3><h2>₦3,000</h2>
+        <p>Basic task access</p>
+        <button class="glass-btn choose" data-plan="Basic">Select plan</button>
+      </article>
+      <article class="glass plan">
+        <h3>Starter</h3><h2>₦5,000</h2>
+        <p>Expanded task access</p>
+        <button class="glass-btn choose" data-plan="Starter">Select plan</button>
+      </article>
+      <article class="glass plan featured">
+        <span class="badge">POPULAR</span>
+        <h3>Premium</h3><h2>₦9,000</h2>
+        <p>Premium task access</p>
+        <button class="primary-btn choose" data-plan="Premium">Select plan</button>
+      </article>
+      <article class="glass plan">
+        <h3>VIP</h3><h2>₦13,000</h2>
+        <p>VIP task access</p>
+        <button class="glass-btn choose" data-plan="VIP">Select plan</button>
+      </article>
+    </div>
+  </section>
+</main>
+
+<!-- AUTHENTICATION -->
+<div class="modal hidden" id="authModal">
+  <div class="glass modal-box">
+    <button class="close" id="closeAuth">×</button>
+    <div class="logo">SURFER<span>✦</span></div>
+    <div class="tabs">
+      <button class="active" data-tab="login">Login</button>
+      <button data-tab="register">Register</button>
+    </div>
+    <h2 id="authHeading">Welcome back</h2>
+    <form id="authForm">
+      <input id="name" placeholder="Full name" class="hidden">
+      <input id="email" type="email" placeholder="Email address" required>
+      <input id="password" type="password" placeholder="Password (minimum 8 characters)" minlength="8" required>
+      <button class="primary-btn full" id="authSubmit">Login</button>
+    </form>
+    <p class="muted">Secure authentication requires the backend connection.</p>
+  </div>
+</div>
+
+<!-- MEMBER DASHBOARD -->
+<div id="dashboard" class="hidden">
+  <header class="dashboard-header">
+    <a class="logo" href="#">SURFER<span>✦</span></a>
+    <button class="glass-btn" id="logout">Log out</button>
   </header>
 
-  <main>
-    <section class="hero section" id="home">
-      <div class="hero-copy">
-        <div class="eyebrow">
-          <span class="status-dot"></span>
-          YOUR NEXT OPPORTUNITY STARTS HERE
-        </div>
+  <div class="dashboard-content">
+    <div class="welcome">
+      <span>MEMBER DASHBOARD</span>
+      <h1>Hello, <span id="memberName">Member</span> 👋</h1>
+      <p>Your Surfer account overview.</p>
+    </div>
 
-        <h1>Complete tasks.<br>
-          <span class="gradient-text">Earn rewards.</span>
-        </h1>
+    <div class="grid three">
+      <article class="glass metric">
+        <small>AVAILABLE BALANCE</small>
+        <h2 id="balance">₦0.00</h2>
+      </article>
+      <article class="glass metric">
+        <small>APPROVED EARNINGS</small>
+        <h2 id="earnings">₦0.00</h2>
+      </article>
+      <article class="glass metric">
+        <small>MEMBERSHIP</small>
+        <h2 id="memberPlan">None</h2>
+      </article>
+    </div>
 
-        <p class="hero-description">
-          Discover available online tasks, complete genuine assignments,
-          and earn rewards. Build your progress one task at a time.
-        </p>
+    <div class="dashboard-nav">
+      <button class="active" data-page="memberTasks">Tasks</button>
+      <button data-page="memberWallet">Wallet</button>
+      <button data-page="memberReferrals">Referrals</button>
+      <button data-page="memberHistory">History</button>
+    </div>
 
-        <div class="hero-actions">
-          <button class="button button-primary button-large" id="heroRegister">
-            Create free account <span>↗</span>
-          </button>
-          <a class="button button-glass button-large" href="#how">Explore how it works</a>
-        </div>
-
-        <div class="hero-note">
-          <span class="mini-check">✓</span>
-          Clear task requirements · Transparent rewards
-        </div>
-      </div>
-
-      <div class="hero-visual">
-        <div class="orbit orbit-one"></div>
-        <div class="orbit orbit-two"></div>
-
-        <div class="floating-card glass-card reward-card">
-          <div class="card-top">
-            <span class="small-label">YOUR REWARD PREVIEW</span>
-            <span class="card-icon">✦</span>
-          </div>
-          <div class="reward-amount">₦2,500</div>
-          <div class="reward-caption">Illustrative task earnings</div>
-          <div class="progress-track">
-            <div class="progress-fill"></div>
-          </div>
-          <div class="progress-label">
-            <span>Task progress</span>
-            <span>75%</span>
-          </div>
-        </div>
-
-        <div class="floating-card glass-card mini-card mini-card-one">
-          <span class="mini-icon purple-icon">✓</span>
-          <div>
-            <strong>Task completed</strong>
-            <small>Awaiting verification</small>
-          </div>
-        </div>
-
-        <div class="floating-card glass-card mini-card mini-card-two">
-          <span class="mini-icon blue-icon">↗</span>
-          <div>
-            <strong>Keep progressing</strong>
-            <small>New opportunities await</small>
-          </div>
-        </div>
-      </div>
+    <section class="glass dashboard-panel" id="memberTasks">
+      <h2>Available tasks</h2>
+      <div id="taskList"></div>
     </section>
 
-    <section class="stats section">
-      <div class="stat glass-card">
-        <span class="stat-symbol">◈</span>
-        <div><strong>Flexible</strong><small>Task opportunities</small></div>
-      </div>
-      <div class="stat glass-card">
-        <span class="stat-symbol">◎</span>
-        <div><strong>Transparent</strong><small>Reward tracking</small></div>
-      </div>
-      <div class="stat glass-card">
-        <span class="stat-symbol">✧</span>
-        <div><strong>Community</strong><small>Referral programme</small></div>
-      </div>
-    </section>
-
-    <section class="section content-section" id="how">
-      <div class="section-heading">
-        <div class="eyebrow">SIMPLE PROCESS</div>
-        <h2>How it <span class="gradient-text">works</span></h2>
-        <p>Three simple steps to get started.</p>
-      </div>
-
-      <div class="steps-grid">
-        <article class="glass-card step-card">
-          <span class="step-number">01</span>
-          <div class="step-icon">◉</div>
-          <h3>Create your account</h3>
-          <p>Register with your details and set up your member profile.</p>
-        </article>
-
-        <article class="glass-card step-card">
-          <span class="step-number">02</span>
-          <div class="step-icon">◇</div>
-          <h3>Complete available tasks</h3>
-          <p>Read each task's requirements and submit your proof for review.</p>
-        </article>
-
-        <article class="glass-card step-card">
-          <span class="step-number">03</span>
-          <div class="step-icon">✦</div>
-          <h3>Receive verified rewards</h3>
-          <p>Approved task rewards are recorded in your account ledger.</p>
-        </article>
-      </div>
-    </section>
-
-    <section class="section content-section" id="tasks">
-      <div class="section-heading heading-row">
-        <div>
-          <div class="eyebrow">OPPORTUNITIES</div>
-          <h2>Explore <span class="gradient-text">tasks</span></h2>
-          <p>Example tasks shown for demonstration.</p>
-        </div>
-        <button class="button button-glass" id="taskLogin">View member area ↗</button>
-      </div>
-
-      <div class="tasks-grid">
-        <article class="glass-card task-card">
-          <div class="task-card-top">
-            <span class="task-category">SOCIAL MEDIA</span>
-            <span class="task-symbol">◎</span>
-          </div>
-          <h3>Social media engagement</h3>
-          <p>Follow the supplied instructions and submit the required evidence.</p>
-          <div class="task-bottom">
-            <strong>₦500 <small>example reward</small></strong>
-            <button class="text-button task-action">View task →</button>
-          </div>
-        </article>
-
-        <article class="glass-card task-card">
-          <div class="task-card-top">
-            <span class="task-category">ONLINE RESEARCH</span>
-            <span class="task-symbol">⌕</span>
-          </div>
-          <h3>Simple research assignment</h3>
-          <p>Complete a short research activity and submit your findings.</p>
-          <div class="task-bottom">
-            <strong>₦1,000 <small>example reward</small></strong>
-            <button class="text-button task-action">View task →</button>
-          </div>
-        </article>
-
-        <article class="glass-card task-card">
-          <div class="task-card-top">
-            <span class="task-category">FEEDBACK</span>
-            <span class="task-symbol">✧</span>
-          </div>
-          <h3>Product feedback</h3>
-          <p>Review a supplied product or service and provide genuine feedback.</p>
-          <div class="task-bottom">
-            <strong>₦750 <small>example reward</small></strong>
-            <button class="text-button task-action">View task →</button>
-          </div>
-        </article>
-      </div>
-    </section>
-
-    <section class="section content-section" id="packages">
-      <div class="section-heading">
-        <div class="eyebrow">MEMBERSHIP OPTIONS</div>
-        <h2>Choose your <span class="gradient-text">access</span></h2>
-        <p>Membership provides access to different task categories. It does not guarantee earnings.</p>
-      </div>
-
-      <div class="packages-grid">
-        <article class="glass-card package-card">
-          <span class="package-name">BASIC</span>
-          <h3>₦3,000</h3>
-          <p>Basic task access</p>
-          <ul>
-            <li>Access to eligible tasks</li>
-            <li>Member dashboard</li>
-            <li>Task submission tracking</li>
-          </ul>
-          <button class="button button-glass package-select" data-plan="Basic">Choose Basic</button>
-        </article>
-
-        <article class="glass-card package-card">
-          <span class="package-name">STARTER</span>
-          <h3>₦5,000</h3>
-          <p>Expanded task access</p>
-          <ul>
-            <li>Starter task categories</li>
-            <li>Member dashboard</li>
-            <li>Task submission tracking</li>
-          </ul>
-          <button class="button button-glass package-select" data-plan="Starter">Choose Starter</button>
-        </article>
-
-        <article class="glass-card package-card featured-package">
-          <span class="popular-tag">POPULAR</span>
-          <span class="package-name">PREMIUM</span>
-          <h3>₦9,000</h3>
-          <p>More eligible task categories</p>
-          <ul>
-            <li>Premium task access</li>
-            <li>Member dashboard</li>
-            <li>Task submission tracking</li>
-          </ul>
-          <button class="button button-primary package-select" data-plan="Premium">Choose Premium</button>
-        </article>
-
-        <article class="glass-card package-card">
-          <span class="package-name">VIP</span>
-          <h3>₦13,000</h3>
-          <p>Highest membership access</p>
-          <ul>
-            <li>VIP eligible task categories</li>
-            <li>Member dashboard</li>
-            <li>Task submission tracking</li>
-          </ul>
-          <button class="button button-glass package-select" data-plan="VIP">Choose VIP</button>
-        </article>
-      </div>
-
-      <p class="fine-print">
-        Membership fees are access fees, not investments. No guaranteed income or
-        returns are promised. Actual task rewards depend on available, funded tasks
-        and successful verification.
-      </p>
-    </section>
-
-    <section class="section final-cta">
-      <div class="glass-card cta-card">
-        <div class="eyebrow">YOUR NEXT STEP</div>
-        <h2>Ready to get <span class="gradient-text">started?</span></h2>
-        <p>Create an account and explore the opportunities available to members.</p>
-        <button class="button button-primary button-large" id="bottomRegister">Join NovaRewards ↗</button>
-      </div>
-    </section>
-  </main>
-
-  <footer class="footer">
-    <a class="brand" href="#">
-      <span class="brand-icon">N</span>
-      <span>Nova<span class="brand-light">Rewards</span></span>
-    </a>
-    <p>© 2026 NovaRewards. Replace with your registered business details.</p>
-    <span>Built for opportunity.</span>
-  </footer>
-
-  <!-- Authentication modal -->
-  <div class="modal-backdrop" id="authModal">
-    <div class="glass-card modal">
-      <button class="modal-close" id="modalClose">×</button>
-
-      <div class="brand modal-brand">
-        <span class="brand-icon">N</span>
-        <span>Nova<span class="brand-light">Rewards</span></span>
-      </div>
-
-      <div class="auth-tabs">
-        <button class="auth-tab active" data-mode="login">Log in</button>
-        <button class="auth-tab" data-mode="register">Create account</button>
-      </div>
-
-      <h2 id="authTitle">Welcome back</h2>
-      <p id="authSubtitle">Enter your details to continue.</p>
-
-      <form id="authForm">
-        <label id="nameLabel" class="hidden">Full name</label>
-        <input id="fullName" class="hidden" type="text" placeholder="Your full name">
-
-        <label>Email address</label>
-        <input id="email" type="email" placeholder="you@example.com" required>
-
-        <label>Password</label>
-        <input id="password" type="password" placeholder="At least 8 characters" minlength="8" required>
-
-        <button class="button button-primary full-width" id="authSubmit" type="submit">
-          Log in
-        </button>
+    <section class="glass dashboard-panel hidden" id="memberWallet">
+      <h2>My wallet</h2>
+      <p class="muted">Only approved and verified task rewards are withdrawable.</p>
+      <h1 id="walletAmount">₦0.00</h1>
+      <form id="withdrawForm">
+        <input id="withdrawAmount" type="number" min="100" placeholder="Withdrawal amount">
+        <input id="bankName" placeholder="Bank name" required>
+        <input id="accountNumber" placeholder="Account number" required>
+        <input id="accountName" placeholder="Account holder name" required>
+        <button class="primary-btn">Request bank withdrawal</button>
       </form>
+      <div id="withdrawHistory"></div>
+    </section>
 
-      <p class="demo-warning">
-        Demonstration interface only. Connect secure authentication before accepting real users.
-      </p>
+    <section class="glass dashboard-panel hidden" id="memberReferrals">
+      <h2>Refer a friend</h2>
+      <p>Share your referral code with genuine people. Only verified eligible referrals count.</p>
+      <div class="ref-code" id="refCode">SURFER-0000</div>
+      <button class="primary-btn" id="copyReferral">Copy referral code</button>
+      <div id="referralList"></div>
+    </section>
+
+    <section class="glass dashboard-panel hidden" id="memberHistory">
+      <h2>Account activity</h2>
+      <div id="activityList">No activity yet.</div>
+    </section>
+
+    <section class="glass dashboard-panel">
+      <h2>Membership options</h2>
+      <div class="grid plans">
+        <article class="glass plan"><h3>Basic</h3><h2>₦3,000</h2><button class="glass-btn choose" data-plan="Basic">Select</button></article>
+        <article class="glass plan"><h3>Starter</h3><h2>₦5,000</h2><button class="glass-btn choose" data-plan="Starter">Select</button></article>
+        <article class="glass plan"><h3>Premium</h3><h2>₦9,000</h2><button class="glass-btn choose" data-plan="Premium">Select</button></article>
+        <article class="glass plan"><h3>VIP</h3><h2>₦13,000</h2><button class="glass-btn choose" data-plan="VIP">Select</button></article>
+      </div>
+      <p class="muted">Plan payments must be verified before membership is activated.</p>
+    </section>
+  </div>
+</div>
+
+<!-- ADMIN DEMO -->
+<div id="admin" class="hidden">
+  <div class="dashboard-header">
+    <div class="logo">SURFER ADMIN</div>
+    <button class="glass-btn" id="adminLogout">Log out</button>
+  </div>
+  <div class="dashboard-content">
+    <h1>Administration</h1>
+    <p class="muted">Demonstration interface. Real admin permissions must be enforced server-side.</p>
+
+    <div class="glass dashboard-panel">
+      <h2>Create a task</h2>
+      <form id="taskForm">
+        <input id="taskTitle" placeholder="Task title" required>
+        <textarea id="taskDescription" placeholder="Task instructions" required></textarea>
+        <input id="taskReward" type="number" placeholder="Reward in Naira" min="1" required>
+        <select id="taskTier">
+          <option value="Basic">Basic</option>
+          <option value="Starter">Starter</option>
+          <option value="Premium">Premium</option>
+          <option value="VIP">VIP</option>
+        </select>
+        <button class="primary-btn">Add task</button>
+      </form>
+    </div>
+
+    <div class="glass dashboard-panel">
+      <h2>Task submissions</h2>
+      <div id="adminSubmissions">No submissions yet.</div>
+    </div>
+
+    <div class="glass dashboard-panel">
+      <h2>Withdrawal requests</h2>
+      <div id="adminWithdrawals">No requests yet.</div>
     </div>
   </div>
+</div>
 
-  <div class="toast" id="toast"></div>
+<div id="toast" class="toast"></div>
 
-  <script src="script.js"></script>
+<footer>
+  <strong>SURFER ✦</strong>
+  <p>© 2026 Surfer. All rights reserved.</p>
+  <p>Task rewards depend on actual completed work and verification.</p>
+</footer>
+
+<script src="script.js"></script>
 </body>
 </html>
